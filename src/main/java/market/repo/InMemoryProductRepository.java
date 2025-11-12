@@ -1,28 +1,67 @@
-
 package market.repo;
-import market.domain.*;
-import java.io.*;
-import java.nio.file.*;
-import java.util.*;
+
+
+import market.domain.Category;
+import market.domain.Product;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.List;
+
 public class InMemoryProductRepository implements ProductRepository {
     private final Map<Long, Product> store = new HashMap<>();
     private final Path file = Paths.get("products.csv");
     private final IdGenerator ids = new IdGenerator(0);
-    @Override public Product save(Product p){
-        if (p.getId()==0) p.setId(nextId());
+
+    @Override
+    public Product save(Product p){
+
+        if (p.getId()==0)
+            p.setId(nextId());
+
         store.put(p.getId(), p);
+
         return p;
     }
-    @Override public Optional<Product> findById(long id){ return Optional.ofNullable(store.get(id)); }
-    @Override public boolean deleteById(long id){ return store.remove(id)!=null; }
-    @Override public List<Product> findAll(){ return new ArrayList<>(store.values()); }
-    @Override public long nextId(){ return ids.next(); }
-    @Override public void load(){
+
+    @Override
+    public Optional<Product> findById(long id){
+        return Optional.ofNullable(store.get(id));
+    }
+
+    @Override
+    public boolean deleteById(long id){
+        return store.remove(id)!=null;
+    }
+
+    @Override
+    public List<Product> findAll(){
+        return new ArrayList<>(store.values());
+    }
+
+    @Override
+    public long nextId(){
+        return ids.next();
+    }
+
+    @Override
+    public void load(){
         store.clear();
+
         if (!Files.exists(file)) return;
-        try (BufferedReader br = Files.newBufferedReader(file)) {
+
+        try (BufferedReader br = Files.newBufferedReader(file)){
             String line;
             long maxId = 0;
+
             while ((line = br.readLine()) != null) {
                 if (line.isBlank() || line.startsWith("#")) continue;
                 List<String> parts = parseCsvLine(line);

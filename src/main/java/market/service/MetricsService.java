@@ -1,17 +1,48 @@
-
 package market.service;
-public class MetricsService {
-    private volatile long lastQueryMillis;
-    private volatile int productCount;
-    private volatile long cacheHits;
-    private volatile long cacheMisses;
-    public void setLastQueryMillis(long ms){ this.lastQueryMillis = ms; }
-    public void setProductCount(int n){ this.productCount = n; }
-    public void setCache(long hits, long misses){ this.cacheHits = hits; this.cacheMisses = misses; }
-    public String snapshot(){
-        return "--- Metrics ---\n" +
-               "products: " + productCount + "\n" +
-               "lastQueryMs: " + lastQueryMillis + "\n" +
-               "cache: hits=" + cacheHits + ", misses=" + cacheMisses + "\n";
-    }
+
+/**
+ * Сервис сбора и предоставления метрик работы приложения.
+ * <p>
+ * Отвечает за хранение и обновление статистических данных:
+ * количество товаров, время последнего запроса, показатели кэша и т.д.
+ * <p>
+ * Может использоваться для анализа производительности и мониторинга состояния системы.
+ */
+public interface MetricsService {
+    /**
+     * Устанавливает текущее количество товаров в каталоге.
+     *
+     * @param n число товаров
+     */
+    void setProductCount(int n);
+
+    /**
+     * Устанавливает время выполнения последнего запроса (в миллисекундах).
+     *
+     * @param ms время выполнения последнего запроса в миллисекундах
+     */
+    void setLastQueryMillis(long ms);
+
+    /**
+     * Обновляет статистику по кэшу (количество попаданий и промахов).
+     *
+     * @param hits   количество успешных обращений к кэшу
+     * @param misses количество промахов кэша (когда данные не найдены)
+     */
+    void setCache(long hits, long misses);
+
+    /**
+     * Возвращает сводку текущих метрик в виде текстового отчёта.
+     * <p>
+     * Пример результата:
+     * <pre>
+     * --- Метрики ---
+     * products: 123
+     * lastQueryMs: 4
+     * cache: hits=78, misses=12
+     * </pre>
+     *
+     * @return текстовое представление текущего состояния метрик
+     */
+    String snapshot();
 }

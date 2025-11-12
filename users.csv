@@ -1,2 +1,5 @@
 #username,password,role
-
+admin,admin,ADMIN
+vika2,123456,USER
+user,user,USER
+vika,pass,USER

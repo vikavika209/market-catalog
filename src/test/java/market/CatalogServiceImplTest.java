@@ -1,20 +1,24 @@
-
 package market;
-import market.domain.*;
+
+
+import market.domain.Category;
+import market.domain.Product;
 import market.repo.InMemoryProductRepository;
-import market.service.CatalogService;
-import market.service.MetricsService;
+import market.service.CatalogServiceImpl;
+import market.service.MetricsServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
-public class CatalogServiceTest {
-    private CatalogService service;
+public class CatalogServiceImplTest {
+    private CatalogServiceImpl service;
     @BeforeEach
-    void setup(){
+    void setup() throws IOException {
         InMemoryProductRepository repo = new InMemoryProductRepository();
-        MetricsService metrics = new MetricsService();
-        service = new CatalogService(repo, metrics);
+        MetricsServiceImpl metrics = new MetricsServiceImpl();
+        service = new CatalogServiceImpl(repo, metrics);
         service.create(new Product(0,"iPhone 14","Apple", Category.ELECTRONICS, 999.0,"Smartphone"));
         service.create(new Product(0,"MacBook Air","Apple", Category.ELECTRONICS, 1299.0,"Laptop"));
         service.create(new Product(0,"Running Shoes","Nike", Category.SPORTS, 120.0,"Shoes"));

@@ -1,57 +1,68 @@
-
 package market.service;
-import market.domain.*;
-import java.io.*;
-import java.nio.file.*;
-import java.util.*;
-public class AuthService {
-    private final Map<String, User> users = new HashMap<>();
-    private final Path file = Paths.get("users.csv");
-    private User current;
-    public AuthService(){
-        load();
-        if (users.isEmpty()) {
-            users.put("admin", new User("admin","admin", Role.ADMIN));
-            users.put("user",  new User("user","user", Role.USER));
-            save();
-        }
-    }
-    public Optional<User> login(String username, String password){
-        User u = users.get(username);
-        if (u!=null && Objects.equals(password, u.getPassword())) {
-            current = u; return Optional.of(u);
-        }
-        return Optional.empty();
-    }
-    public void logout(){ current = null; }
-    public Optional<User> current(){ return Optional.ofNullable(current); }
-    public void register(String username, String password, Role role){
-        if (users.containsKey(username)) throw new IllegalArgumentException("Username taken");
-        users.put(username, new User(username, password, role));
-        save();
-    }
-    private void load(){
-        if (!Files.exists(file)) return;
-        try (BufferedReader br = Files.newBufferedReader(file)) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                if (line.isBlank() || line.startsWith("#")) continue;
-                String[] p = line.split(",", -1);
-                users.put(p[0], new User(p[0], p[1], Role.valueOf(p[2])));
-            }
-        } catch (IOException e){ System.err.println("users.csv load failed: "+e.getMessage()); }
-    }
-    private void save(){
-        try (BufferedWriter bw = Files.newBufferedWriter(file)) {
-            bw.write("#username,password,role\n");
-            for (User u: users.values()){
-                bw.write(String.join(",", u.getUsername(), u.getPassword(), u.getRole().name()));
-                bw.newLine();
-            }
-        } catch (IOException e){ System.err.println("users.csv save failed: "+e.getMessage()); }
-    }
 
-    public boolean exists(String username) {
-        return users.containsKey(username);
-    }
+import market.domain.Role;
+import market.domain.User;
+
+import java.util.Optional;
+
+/**
+ * Сервис аутентификации и управления пользователями.
+ * <p>
+ * Отвечает за бизнес-логику входа, выхода, регистрацию новых пользователей,
+ * а также за сохранение и загрузку данных пользователей через репозиторий.
+ * <p>
+ * Сервис изолирует доменный уровень от деталей хранения данных.
+ */
+public interface AuthService {
+    /**
+     * Выполняет вход пользователя по имени и паролю.
+     *
+     * @param username имя пользователя
+     * @param password пароль пользователя
+     * @return {@link Optional} с объектом {@link User}, если вход выполнен успешно;
+     *         {@link Optional#empty()} — если имя пользователя или пароль неверны
+     */
+    Optional<User> login(String username, String password);
+
+    /**
+     * Выполняет выход текущего авторизованного пользователя.
+     * После вызова этого метода {@link #current()} вернёт {@code Optional.empty()}.
+     */
+    void logout();
+
+    /**
+     * Возвращает текущего авторизованного пользователя, если он есть.
+     *
+     * @return {@link Optional} с объектом {@link User}, если пользователь авторизован;
+     *         {@link Optional#empty()}, если в системе никто не вошёл
+     */
+    Optional<User> current();
+
+    /**
+     * Регистрирует нового пользователя в системе.
+     * <p>
+     * Проверяет уникальность имени и валидирует вводимые данные.
+     * По умолчанию создаётся пользователь с ролью {@link Role#USER}.
+     *
+     * @param username имя нового пользователя
+     * @param password пароль нового пользователя
+     * @param role     роль (например, {@link Role#USER} или {@link Role#ADMIN})
+     * @throws IllegalArgumentException если пользователь с таким именем уже существует
+     */
+    void register(String username, String password, Role role);
+
+    /**
+     * Проверяет, существует ли пользователь с указанным именем.
+     *
+     * @param username имя пользователя
+     * @return {@code true}, если пользователь с таким именем существует; {@code false} — иначе
+     */
+    boolean exists(String username);
+
+    /**
+     * Сохраняет текущее состояние пользователей в постоянное хранилище.
+     * <p>
+     * Может использоваться, например, для записи данных в CSV-файл.
+     */
+    void persist();
 }

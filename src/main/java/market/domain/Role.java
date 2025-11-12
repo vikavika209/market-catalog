@@ -1,3 +1,5 @@
-
 package market.domain;
-public enum Role { USER, ADMIN }
+
+public enum Role {
+    USER, ADMIN
+}

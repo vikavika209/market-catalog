@@ -1,0 +1,12 @@
+[2025-11-12T21:57:40.054812600] user=vika2 action=CREATE details=новый пользователь
+[2025-11-12T21:58:08.915709400] user=vika2 action=LOGOUT details=
+[2025-11-12T21:58:16.182713600] user=admin action=LOGIN details=
+[2025-11-12T21:58:50.869316300] user=admin action=CREATE details=id=1
+[2025-11-12T21:58:59.764658700] user=admin action=LOGOUT details=
+[2025-11-12T21:59:15.272122700] user=vika2 action=LOGIN details=
+[2025-11-12T22:00:08.286081400] user=admin action=LOGIN details=
+[2025-11-12T22:00:39.135842500] user=admin action=CREATE details=id=1
+[2025-11-12T22:00:44.424108600] user=admin action=LOGOUT details=
+[2025-11-12T22:28:06.640559700] user=admin action=LOGIN details=
+[2025-11-12T22:28:24.387878500] user=admin action=DELETE details=id=1
+[2025-11-12T22:28:31.582325300] user=admin action=LOGOUT details=

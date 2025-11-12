@@ -1,15 +1,38 @@
-
 package market.domain;
 import java.time.LocalDateTime;
+
 public class AuditEvent {
-    private final LocalDateTime ts = LocalDateTime.now();
     private final String username;
-    private final String action;
+    private final AuditAction action;
     private final String details;
-    public AuditEvent(String username, String action, String details) {
-        this.username = username; this.action = action; this.details = details;
+    private final LocalDateTime timestamp;
+
+    public AuditEvent(String username, AuditAction action, String details) {
+        this.username = username;
+        this.action = action;
+        this.details = details;
+        this.timestamp = LocalDateTime.now();
     }
-    public String format() {
-        return "%s | %s | %s | %s".formatted(ts, username == null ? "-" : username, action, details);
+
+    public String getUsername() {
+        return username;
+    }
+
+    public AuditAction getAction() {
+        return action;
+    }
+
+    public String getDetails() {
+        return details;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    @Override
+    public String toString() {
+        return "[%s] user=%s action=%s details=%s"
+                .formatted(timestamp, username, action, details);
     }
 }

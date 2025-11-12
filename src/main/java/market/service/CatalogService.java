@@ -1,89 +1,97 @@
-
 package market.service;
-import market.cache.LRUCache;
-import market.domain.*;
-import market.repo.ProductRepository;
-import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-public class CatalogService {
-    private final ProductRepository repo;
-    private final LRUCache<String, List<Long>> cache;
-    private final MetricsService metrics;
-    public CatalogService(ProductRepository repo, MetricsService metrics){
-        this.repo = repo;
-        this.metrics = metrics;
-        this.cache = new LRUCache<>(64);
-        repo.load();
-        metrics.setProductCount(repo.findAll().size());
-    }
-    public Product create(Product p){
-        Product saved = repo.save(p);
-        invalidateCache();
-        metrics.setProductCount(repo.findAll().size());
-        return saved;
-    }
-    public Optional<Product> get(long id){ return repo.findById(id); }
-    public boolean delete(long id){
-        boolean ok = repo.deleteById(id);
-        if (ok){ invalidateCache(); metrics.setProductCount(repo.findAll().size()); }
-        return ok;
-    }
-    public Product update(Product p){
-        if (p.getId()==0 || repo.findById(p.getId()).isEmpty())
-            throw new IllegalArgumentException("Product not found");
-        Product saved = repo.save(p);
-        invalidateCache();
-        return saved;
-    }
-    public List<Product> listAll(){ return repo.findAll(); }
-    public List<Product> search(String namePart, String brand, Category category, Double min, Double max, Boolean onlyActive){
-        String key = cacheKey(namePart, brand, category, min, max, onlyActive);
-        long t0 = System.currentTimeMillis();
-        Optional<List<Long>> cached = cache.getIfPresent(key);
-        List<Product> result;
-        if (cached.isPresent()){
-            result = idsToProducts(cached.get());
-        } else {
-            Predicate<Product> pred = p -> true;
-            if (namePart != null && !namePart.isBlank()){
-                String q = namePart.toLowerCase();
-                pred = pred.and(p -> p.getName().toLowerCase().contains(q) ||
-                                   (p.getDescription()!=null && p.getDescription().toLowerCase().contains(q)));
-            }
-            if (brand != null && !brand.isBlank()){
-                String b = brand.toLowerCase();
-                pred = pred.and(p -> p.getBrand()!=null && p.getBrand().toLowerCase().contains(b));
-            }
-            if (category != null) pred = pred.and(p -> p.getCategory()==category);
-            if (min != null) pred = pred.and(p -> p.getPrice() >= min);
-            if (max != null) pred = pred.and(p -> p.getPrice() <= max);
-            if (onlyActive != null && onlyActive) pred = pred.and(Product::isActive);
-            result = repo.findAll().stream().filter(pred).collect(Collectors.toList());
-            cache.put(key, result.stream().map(Product::getId).collect(Collectors.toList()));
-        }
-        long dt = System.currentTimeMillis() - t0;
-        metrics.setLastQueryMillis(dt);
-        metrics.setCache(cache.getHits(), cache.getMisses());
-        return result;
-    }
-    public List<Product> paginate(List<Product> list, int page, int size){
-        if (size<=0) throw new IllegalArgumentException("size must be > 0");
-        if (page<0) throw new IllegalArgumentException("page must be >= 0");
-        int from = page * size;
-        if (from >= list.size()) return Collections.emptyList();
-        int to = Math.min(from + size, list.size());
-        return list.subList(from, to);
-    }
-    public void persist(){ repo.flush(); }
-    private void invalidateCache(){ cache.clear(); }
-    private String cacheKey(Object... parts){
-        return Arrays.stream(parts).map(o -> o==null? "null" : o.toString()).collect(Collectors.joining("|"));
-    }
-    private List<Product> idsToProducts(List<Long> ids){
-        Map<Long, Product> map = repo.findAll().stream().collect(Collectors.toMap(Product::getId, p->p));
-        List<Product> out = new ArrayList<>();
-        for (Long id: ids){ Product p = map.get(id); if (p!=null) out.add(p); }
-        return out;
-    }
+
+import market.domain.Category;
+import market.domain.Product;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Сервис бизнес-логики каталога товаров.
+ * <p>
+ * Отвечает за операции создания, изменения, удаления и поиска товаров,
+ * а также за фильтрацию, пагинацию и сохранение данных.
+ * <p>
+ * Данный интерфейс изолирует слой бизнес-логики от конкретных реализаций хранилища
+ * (например, от файлового или in-memory репозитория).
+ */
+public interface CatalogService {
+    /**
+     * Создаёт новый товар в каталоге.
+     *
+     * @param p объект {@link Product}, содержащий данные нового товара
+     * @return сохранённый товар с присвоенным уникальным идентификатором
+     * @throws IllegalArgumentException если данные товара некорректны
+     */
+    Product create(Product p);
+
+    /**
+     * Возвращает товар по идентификатору.
+     *
+     * @param id уникальный идентификатор товара
+     * @return {@link Optional} с найденным товаром или {@link Optional#empty()},
+     *         если товар с таким идентификатором не найден
+     */
+    Optional<Product> get(long id);
+
+    /**
+     * Обновляет существующий товар.
+     *
+     * @param p объект {@link Product} с изменёнными данными
+     * @return обновлённый товар
+     * @throws IllegalArgumentException если товар с указанным идентификатором не существует
+     */
+    Product update(Product p);
+
+    /**
+     * Удаляет товар по идентификатору.
+     *
+     * @param id идентификатор удаляемого товара
+     * @return {@code true}, если товар был успешно удалён; {@code false}, если не найден
+     */
+    boolean delete(long id);
+
+    /**
+     * Возвращает список всех товаров, доступных в каталоге.
+     *
+     * @return список всех товаров (может быть пустым, но не {@code null})
+     */
+    List<Product> listAll();
+
+    /**
+     * Выполняет поиск товаров по заданным фильтрам.
+     * <p>
+     * Все параметры необязательны. Если параметр равен {@code null} или пустой строке —
+     * он не участвует в фильтрации.
+     *
+     * @param q          часть названия или описания товара
+     * @param brand      название бренда для фильтрации
+     * @param category   категория товара ({@link Category})
+     * @param minPrice   минимальная цена
+     * @param maxPrice   максимальная цена
+     * @param onlyActive если {@code true} — возвращаются только активные товары
+     * @return список товаров, удовлетворяющих заданным критериям
+     */
+    List<Product> search(String q, String brand, Category category,
+                         Double minPrice, Double maxPrice, Boolean onlyActive);
+
+    /**
+     * Разбивает список товаров на страницы указанного размера и возвращает содержимое страницы.
+     * <p>
+     * Если номер страницы выходит за пределы диапазона, возвращается пустой список.
+     *
+     * @param list список всех товаров
+     * @param page номер страницы (начиная с 0)
+     * @param size количество товаров на странице
+     * @return подсписок товаров, соответствующий указанной странице
+     */
+    List<Product> paginate(List<Product> list, int page, int size);
+
+    /**
+     * Сохраняет текущее состояние каталога в постоянное хранилище (например, CSV-файл).
+     *
+     * @throws IOException если произошла ошибка при записи данных
+     */
+    void persist() throws IOException;
 }

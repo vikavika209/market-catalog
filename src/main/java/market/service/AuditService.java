@@ -1,16 +1,21 @@
-
 package market.service;
+
 import market.domain.AuditEvent;
-import java.io.*;
-import java.nio.file.*;
-public class AuditService {
-    private final Path file = Paths.get("audit.log");
-    public void append(AuditEvent e){
-        try (BufferedWriter bw = Files.newBufferedWriter(file,
-                StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            bw.write(e.format()); bw.newLine();
-        } catch (IOException ex) {
-            System.err.println("Audit write failed: " + ex.getMessage());
-        }
-    }
+
+/**
+ * Сервис аудита действий пользователей.
+ * <p>
+ * Отвечает за запись событий, связанных с активностью пользователей:
+ * вход, выход, создание, обновление, удаление и поиск данных.
+ * <p>
+ * Реализация может сохранять события в файл, базу данных или отправлять их во внешние системы логирования.
+ */
+public interface AuditService {
+    /**
+     * Добавляет новое событие в журнал аудита.
+     *
+     * @param e объект события {@link AuditEvent}, содержащий информацию
+     *          о пользователе, типе действия и дополнительных деталях
+     */
+    void append(AuditEvent e);
 }
