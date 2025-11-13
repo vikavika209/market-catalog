@@ -2,6 +2,7 @@ package market.domain;
 
 public class User {
 
+    private Long id;
     private String username;
     private String password;
     private Role role;
@@ -11,6 +12,10 @@ public class User {
         this.username = username;
         this.password = password;
         this.role = role;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getUsername(){
@@ -23,5 +28,21 @@ public class User {
 
     public Role getRole(){
         return role;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

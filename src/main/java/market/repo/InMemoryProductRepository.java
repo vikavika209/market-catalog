@@ -16,6 +16,10 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.List;
 
+/**
+ * In-memory репозиторий для сущности {@link Product}.
+ * Данные хранятся в HashMap и исчезают после завершения программы.
+ */
 public class InMemoryProductRepository implements ProductRepository {
     private final Map<Long, Product> store = new HashMap<>();
     private final Path file = Paths.get("products.csv");

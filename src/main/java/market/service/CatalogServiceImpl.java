@@ -10,6 +10,12 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+/**
+ * Реализация сервиса каталога товаров.
+ * Инкапсулирует бизнес-логику CRUD-операций, поиска, фильтрации и пагинации.
+ * Работает поверх {@link ProductRepository} и использует {@link MetricsService}
+ * для сбора метрик (время выполнения запросов, статистика кеша).
+ */
 public class CatalogServiceImpl implements CatalogService{
     private final ProductRepository repo;
     private final MetricsService metrics;

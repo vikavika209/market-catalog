@@ -7,6 +7,16 @@ import market.service.AuthService;
 
 import java.util.Optional;
 
+/**
+ * Реализация {@link AuthController}, взаимодействующая с пользователем
+ * через консольный интерфейс.
+ * <p>
+ * Данный контроллер выступает адаптером между UI-слоем (консоль)
+ * и сервисным уровнем {@link AuthService}. Он не содержит бизнес-логики,
+ * а только делегирует вызовы сервису.
+ * <p>
+ * Позволяет легко заменить консольный UI на REST API без изменения бизнес-логики.
+ */
 public class ConsoleAuthController implements AuthController {
     private final AuthService auth;
 

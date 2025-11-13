@@ -15,6 +15,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * In-memory репозиторий для сущности {@link User}.
+ * Данные хранятся в HashMap и исчезают после завершения программы.
+ */
 public class InMemoryUserRepository implements UserRepository{
     private final Map<String, User> users = new HashMap<>();
     private final Path file = Paths.get("users.csv");

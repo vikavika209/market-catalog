@@ -19,10 +19,10 @@ public class CatalogServiceImplTest {
         InMemoryProductRepository repo = new InMemoryProductRepository();
         MetricsServiceImpl metrics = new MetricsServiceImpl();
         service = new CatalogServiceImpl(repo, metrics);
-        service.create(new Product(0,"iPhone 14","Apple", Category.ELECTRONICS, 999.0,"Smartphone"));
-        service.create(new Product(0,"MacBook Air","Apple", Category.ELECTRONICS, 1299.0,"Laptop"));
-        service.create(new Product(0,"Running Shoes","Nike", Category.SPORTS, 120.0,"Shoes"));
-        service.create(new Product(0,"Coffee","Lavazza", Category.FOOD, 8.5,"Beans"));
+        service.create(new Product(0L,"iPhone 14","Apple", Category.ELECTRONICS, 999.0,"Smartphone"));
+        service.create(new Product(0L,"MacBook Air","Apple", Category.ELECTRONICS, 1299.0,"Laptop"));
+        service.create(new Product(0L,"Running Shoes","Nike", Category.SPORTS, 120.0,"Shoes"));
+        service.create(new Product(0L,"Coffee","Lavazza", Category.FOOD, 8.5,"Beans"));
     }
     @Test
     void searchByBrand(){

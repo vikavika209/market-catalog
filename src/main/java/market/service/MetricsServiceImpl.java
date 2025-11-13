@@ -1,5 +1,15 @@
 package market.service;
 
+/**
+ * Реализация сервиса метрик каталога.
+ * Хранит статистику по работе приложения:
+ *  • количество товаров;
+ *  • время последнего запроса (мс);
+ *  • попадания и промахи LRU-кеша.
+ *
+ * Предоставляет снимок метрик в текстовом виде
+ * для отображения в консольном интерфейсе.
+ */
 public class MetricsServiceImpl implements  MetricsService{
     private volatile long lastQueryMillis;
     private volatile int productCount;
