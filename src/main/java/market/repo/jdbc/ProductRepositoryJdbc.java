@@ -36,12 +36,11 @@ public class ProductRepositoryJdbc implements ProductRepository {
 
     private Product insert(Product p) {
         String sql = """
-            INSERT INTO market.products (name, brand, category, price, description, active)
-            VALUES (?, ?, ?, ?, ?, ?)
-            RETURNING id
-        """;
-        try (Connection cn = ds.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+                    INSERT INTO market.products (name, brand, category, price, description, active)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    RETURNING id
+                """;
+        try (Connection cn = ds.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setString(1, p.getName());
             ps.setString(2, p.getBrand());
             ps.setString(3, p.getCategory().name());
@@ -59,12 +58,11 @@ public class ProductRepositoryJdbc implements ProductRepository {
 
     private Product update(Product p) {
         String sql = """
-            UPDATE market.products
-            SET name=?, brand=?, category=?, price=?, description=?, active=?
-            WHERE id=?
-        """;
-        try (Connection cn = ds.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+                    UPDATE market.products
+                    SET name=?, brand=?, category=?, price=?, description=?, active=?
+                    WHERE id=?
+                """;
+        try (Connection cn = ds.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setString(1, p.getName());
             ps.setString(2, p.getBrand());
             ps.setString(3, p.getCategory().name());
@@ -82,11 +80,10 @@ public class ProductRepositoryJdbc implements ProductRepository {
     @Override
     public Optional<Product> findById(long id) {
         String sql = """
-            SELECT id,name,brand,category,price,description,active
-            FROM market.products WHERE id=?
-        """;
-        try (Connection cn = ds.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+                    SELECT id,name,brand,category,price,description,active
+                    FROM market.products WHERE id=?
+                """;
+        try (Connection cn = ds.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) return Optional.empty();
@@ -100,8 +97,7 @@ public class ProductRepositoryJdbc implements ProductRepository {
     @Override
     public boolean deleteById(long id) {
         String sql = "DELETE FROM market.products WHERE id=?";
-        try (Connection cn = ds.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+        try (Connection cn = ds.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setLong(1, id);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -112,14 +108,12 @@ public class ProductRepositoryJdbc implements ProductRepository {
     @Override
     public List<Product> findAll() {
         String sql = """
-            SELECT id,name,brand,category,price,description,active
-            FROM market.products
-            ORDER BY id
-        """;
+                    SELECT id,name,brand,category,price,description,active
+                    FROM market.products
+                    ORDER BY id
+                """;
 
-        try (Connection cn = ds.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection cn = ds.getConnection(); PreparedStatement ps = cn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             List<Product> list = new ArrayList<>();
             while (rs.next()) list.add(map(rs));
             return list;
@@ -130,9 +124,7 @@ public class ProductRepositoryJdbc implements ProductRepository {
 
     @Override
     public long nextId() {
-        throw new PersistenceException(
-                "Генерация ID недоступна: репозиторий использует PostgreSQL sequence через DEFAULT/RETURNING"
-        );
+        throw new PersistenceException("Генерация ID недоступна: репозиторий использует PostgreSQL sequence через DEFAULT/RETURNING");
     }
 
     @Override

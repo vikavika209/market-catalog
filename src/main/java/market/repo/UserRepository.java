@@ -19,7 +19,7 @@ public interface UserRepository {
      *
      * @param username имя пользователя
      * @return {@link Optional} с найденным пользователем или {@link Optional#empty()},
-     *         если пользователь с таким именем не найден
+     * если пользователь с таким именем не найден
      */
     Optional<User> findByUsername(String username);
 

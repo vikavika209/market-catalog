@@ -1,108 +1,78 @@
 package market.config;
 
+import market.exception.ConfigurationException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Загружает конфигурацию приложения из файла {@code application.properties},
- * расположенного в classpath ({@code src/main/resources}).
+ * Универсальный загрузчик конфигурации.
  * <p>
- * Класс предоставляет удобные методы для доступа к параметрам подключения к БД,
- * настройкам Liquibase и дополнительным параметрам.
- * <p>
- * Используется как простой механизм конфигурации без Spring.
+ * Назначение класса — читать application.properties и предоставлять доступ
+ * к параметрам через метод get(...).
  */
 public class AppConfig {
 
-    /** Хранилище всех загруженных свойств. */
+    /**
+     * Имя файла конфигурации в classpath
+     */
+    private static final String CONFIG_FILE = "application.properties";
+
     private final Properties props = new Properties();
 
     /**
-     * Создаёт новый экземпляр конфигурации и загружает файл
-     * {@code application.properties} из classpath.
+     * Загружает файл application.properties из classpath.
      *
-     * @throws RuntimeException если файл отсутствует или произошла ошибка чтения
+     * @throws ConfigurationException если файл не найден или повреждён
      */
     public AppConfig() {
-        try (InputStream in = getClass().getClassLoader()
-                .getResourceAsStream("application.properties")) {
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream(CONFIG_FILE)) {
 
             if (in == null) {
-                throw new RuntimeException("Файл application.properties не найден");
+                throw new ConfigurationException("Файл конфигурации '" + CONFIG_FILE + "' не найден в classpath");
             }
 
             props.load(in);
 
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка загрузки конфигурации: " + e.getMessage());
+            throw new ConfigurationException("Ошибка загрузки конфигурации: " + e.getMessage(), e);
         }
     }
 
     /**
-     * Возвращает значение свойства по ключу.
+     * Получить значение параметра по ключу.
      *
-     * @param key имя параметра
-     * @return значение или {@code null}, если параметр отсутствует
+     * @param key ключ параметра
+     * @return строковое значение или null, если ключ отсутствует
      */
     public String get(String key) {
         return props.getProperty(key);
     }
 
-    /** @return хост PostgreSQL */
-    public String dbHost() {
-        return get("db.host");
+    /**
+     * Получить параметр или дефолтное значение.
+     *
+     * @param key          ключ
+     * @param defaultValue значение по умолчанию
+     * @return значение из конфигурации или defaultValue
+     */
+    public String get(String key, String defaultValue) {
+        return props.getProperty(key, defaultValue);
     }
 
-    /** @return порт PostgreSQL */
-    public int dbPort() {
-        return Integer.parseInt(get("db.port"));
-    }
-
-    /** @return имя базы данных */
-    public String dbName() {
-        return get("db.name");
-    }
-
-    /** @return имя пользователя БД */
-    public String dbUser() {
-        return get("db.user");
-    }
-
-    /** @return пароль пользователя БД */
-    public String dbPassword() {
-        return get("db.password");
-    }
-
-    /** @return путь к Liquibase changelog-файлу */
-    public String liquibaseChangelog() {
-        return get("liquibase.changelog");
-    }
-
-    /** @return схема, в которой создаются бизнес-таблицы */
-    public String liquibaseDefaultSchema() {
-        return get("liquibase.defaultSchema");
-    }
-
-    /** @return схема, в которой хранятся служебные таблицы Liquibase */
-    public String liquibaseServiceSchema() {
-        return get("liquibase.serviceSchema");
-    }
-
-    /** @return размер LRU-кэша для сервисов */
-    public int cacheSize() {
-        return Integer.parseInt(get("cache.size"));
-    }
 
     /**
-     * Формирует JDBC URL для подключения к PostgreSQL.
-     *
-     * @return строка вида {@code jdbc:postgresql://host:port/dbname}
+     * Получить числовой параметр с дефолтом.
      */
-    public String jdbcUrl() {
-        return "jdbc:postgresql://%s:%d/%s".formatted(
-                dbHost(), dbPort(), dbName()
-        );
+    public int getInt(String key, int defaultValue) {
+        try {
+            String value = get(key);
+            return (value == null) ? defaultValue : Integer.parseInt(value);
+        } catch (Exception e) {
+            throw new ConfigurationException("Ожидалось целое число в параметре '" + key + "'", e);
+        }
     }
 }
+
 

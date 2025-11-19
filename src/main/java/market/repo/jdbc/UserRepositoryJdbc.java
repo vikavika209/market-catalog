@@ -6,7 +6,10 @@ import market.exception.PersistenceException;
 import market.repo.UserRepository;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Optional;
 
 /**
@@ -26,12 +29,11 @@ public class UserRepositoryJdbc implements UserRepository {
     @Override
     public Optional<User> findByUsername(String username) {
         String sql = """
-            SELECT id, username, password, role
-            FROM market.users
-            WHERE username = ?
-            """;
-        try (Connection cn = ds.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+                SELECT id, username, password, role
+                FROM market.users
+                WHERE username = ?
+                """;
+        try (Connection cn = ds.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
 
             ps.setString(1, username);
 
@@ -58,8 +60,7 @@ public class UserRepositoryJdbc implements UserRepository {
     @Override
     public boolean exists(String username) {
         String sql = "SELECT 1 FROM market.users WHERE username = ?";
-        try (Connection cn = ds.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+        try (Connection cn = ds.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
 
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
@@ -92,12 +93,11 @@ public class UserRepositoryJdbc implements UserRepository {
 
     private void insert(User user) {
         String sql = """
-            INSERT INTO market.users (username, password, role)
-            VALUES (?, ?, ?)
-            RETURNING id
-            """;
-        try (Connection cn = ds.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+                INSERT INTO market.users (username, password, role)
+                VALUES (?, ?, ?)
+                RETURNING id
+                """;
+        try (Connection cn = ds.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
 
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getPassword());
@@ -115,12 +115,11 @@ public class UserRepositoryJdbc implements UserRepository {
 
     private void update(User user) {
         String sql = """
-            UPDATE market.users
-               SET username = ?, password = ?, role = ?
-             WHERE id = ?
-            """;
-        try (Connection cn = ds.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+                UPDATE market.users
+                   SET username = ?, password = ?, role = ?
+                 WHERE id = ?
+                """;
+        try (Connection cn = ds.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
 
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getPassword());
@@ -129,9 +128,7 @@ public class UserRepositoryJdbc implements UserRepository {
 
             int updated = ps.executeUpdate();
             if (updated == 0) {
-                throw new PersistenceException(
-                        "Не найден пользователь для обновления: id=" + user.getId()
-                );
+                throw new PersistenceException("Не найден пользователь для обновления: id=" + user.getId());
             }
         } catch (SQLException e) {
             throw wrap("Не удалось обновить пользователя id=" + user.getId(), e);

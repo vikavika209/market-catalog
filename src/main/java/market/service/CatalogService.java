@@ -31,7 +31,7 @@ public interface CatalogService {
      *
      * @param id уникальный идентификатор товара
      * @return {@link Optional} с найденным товаром или {@link Optional#empty()},
-     *         если товар с таким идентификатором не найден
+     * если товар с таким идентификатором не найден
      */
     Optional<Product> get(long id);
 

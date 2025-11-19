@@ -31,7 +31,7 @@ public interface ProductRepository {
      *
      * @param id идентификатор товара
      * @return {@link Optional} с найденным товаром или {@link Optional#empty()},
-     *         если товар с таким идентификатором не найден
+     * если товар с таким идентификатором не найден
      */
     Optional<Product> findById(long id);
 
@@ -40,7 +40,7 @@ public interface ProductRepository {
      *
      * @param id идентификатор товара
      * @return {@code true}, если товар был успешно удалён;
-     *         {@code false}, если товар с таким идентификатором не найден
+     * {@code false}, если товар с таким идентификатором не найден
      */
     boolean deleteById(long id);
 

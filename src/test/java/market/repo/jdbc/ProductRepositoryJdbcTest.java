@@ -1,48 +1,23 @@
 package market.repo.jdbc;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-import market.db.MigrationRunner;
 import market.domain.Category;
 import market.domain.Product;
 import market.repo.ProductRepository;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import javax.sql.DataSource;
-
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class ProductRepositoryJdbcTest {
-    private static final PostgreSQLContainer<?> PG =
-            new PostgreSQLContainer<>("postgres:16-alpine")
-                    .withDatabaseName("marketdb")
-                    .withUsername("app_user")
-                    .withPassword("app_password");
+class ProductRepositoryJdbcTest extends BaseJdbcTest {
+    private static final PostgreSQLContainer<?> PG = new PostgreSQLContainer<>("postgres:16-alpine").withDatabaseName("marketdb").withUsername("app_user").withPassword("app_password");
 
-    private DataSource ds;
     private ProductRepository repo;
 
     @BeforeAll
-    void start() {
-        PG.start();
-        String url = PG.getJdbcUrl();
-        MigrationRunner.runMigrations(url, PG.getUsername(), PG.getPassword(),
-                "db/changelog/db.changelog-master.yaml",
-                "market",
-                "meta");
-
-        HikariConfig cfg = new HikariConfig();
-        cfg.setJdbcUrl(url);
-        cfg.setUsername(PG.getUsername());
-        cfg.setPassword(PG.getPassword());
-        ds = new HikariDataSource(cfg);
-
+    void initRepo() {
         repo = new ProductRepositoryJdbc(ds);
-    }
-
-    @AfterAll
-    void stop() {
-        PG.stop();
     }
 
     @Test

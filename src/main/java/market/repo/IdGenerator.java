@@ -11,7 +11,9 @@ package market.repo;
  */
 public class IdGenerator {
 
-    /** Текущее значение последовательности. */
+    /**
+     * Текущее значение последовательности.
+     */
     private long seq;
 
     /**

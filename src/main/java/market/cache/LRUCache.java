@@ -15,14 +15,20 @@ import java.util.Optional;
  * @param <K> тип ключа
  * @param <V> тип значения
  */
-public class LRUCache<K,V> extends LinkedHashMap<K,V> {
-    /** Максимальное количество элементов в кэше. */
+public class LRUCache<K, V> extends LinkedHashMap<K, V> {
+    /**
+     * Максимальное количество элементов в кэше.
+     */
     private final int capacity;
 
-    /** Количество успешных обращений к кэшу (cache hits). */
+    /**
+     * Количество успешных обращений к кэшу (cache hits).
+     */
     private long hits;
 
-    /** Количество промахов кэша (cache misses). */
+    /**
+     * Количество промахов кэша (cache misses).
+     */
     private long misses;
 
     /**
@@ -54,7 +60,7 @@ public class LRUCache<K,V> extends LinkedHashMap<K,V> {
      *
      * @param key ключ для поиска
      * @return {@link Optional} с найденным значением, если элемент присутствует;
-     *         {@link Optional#empty()} — если элемент отсутствует в кэше
+     * {@link Optional#empty()} — если элемент отсутствует в кэше
      */
     public Optional<V> getIfPresent(K key) {
         if (super.containsKey(key)) {
