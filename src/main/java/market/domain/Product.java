@@ -3,7 +3,7 @@ package market.domain;
 import java.util.Objects;
 
 public class Product {
-    private long id;
+    private Long id;
     private String name;
     private String brand;
     private Category category;
@@ -13,7 +13,7 @@ public class Product {
 
     public Product() {}
     public Product(
-            long id,
+            Long id,
             String name,
             String brand,
             Category category,
@@ -26,11 +26,11 @@ public class Product {
         this.price = price;
         this.description = description;
     }
-    public long getId(){
+    public Long getId(){
         return id;
     }
 
-    public void setId(long id){
+    public void setId(Long id){
         this.id = id;
     }
 

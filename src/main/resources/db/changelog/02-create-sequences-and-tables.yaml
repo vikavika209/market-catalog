@@ -1,0 +1,119 @@
+databaseChangeLog:
+  - changeSet:
+      id: 02-sequences
+      author: vika
+      changes:
+        - createSequence:
+            sequenceName: seq_product_id
+            schemaName: market
+            startValue: 1
+            incrementBy: 1
+        - createSequence:
+            sequenceName: seq_user_id
+            schemaName: market
+            startValue: 1
+            incrementBy: 1
+        - createSequence:
+            sequenceName: seq_audit_id
+            schemaName: market
+            startValue: 1
+            incrementBy: 1
+
+  - changeSet:
+      id: 03-tables
+      author: vika
+      changes:
+        - createTable:
+            tableName: users
+            schemaName: market
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                  defaultValueComputed: "nextval('market.seq_user_id')"
+              - column:
+                  name: username
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: password
+                  type: VARCHAR(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+
+        - createTable:
+            tableName: products
+            schemaName: market
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints: { primaryKey: true, nullable: false }
+                  defaultValueComputed: "nextval('market.seq_product_id')"
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: brand
+                  type: VARCHAR(100)
+              - column:
+                  name: category
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: price
+                  type: NUMERIC(12,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: TEXT
+              - column:
+                  name: active
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+
+        - createTable:
+            tableName: audit_log
+            schemaName: market
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                  defaultValueComputed: "nextval('market.seq_audit_id')"
+              - column:
+                  name: username
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: action
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: details
+                  type: TEXT
+              - column:
+                  name: ts
+                  type: TIMESTAMP
+                  defaultValueComputed: "CURRENT_TIMESTAMP"
+                  constraints:
+                    nullable: false

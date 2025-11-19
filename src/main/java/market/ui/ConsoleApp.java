@@ -1,21 +1,38 @@
 package market.ui;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import market.controller.api.AuthController;
 import market.controller.api.ProductController;
 import market.controller.api.impl.console.ConsoleAuthController;
 import market.controller.api.impl.console.ConsoleProductController;
+import market.db.MigrationRunner;
 import market.domain.*;
 import market.exception.AuthorizationException;
 import market.exception.EntityNotFoundException;
 import market.exception.PersistenceException;
 import market.exception.ValidationException;
-import market.repo.*;
-import market.service.*;
+import market.repo.jdbc.AuditRepositoryJdbc;
+import market.repo.jdbc.ProductRepositoryJdbc;
+import market.repo.jdbc.UserRepositoryJdbc;
+import market.service.AuditService;
+import market.service.MetricsService;
+import market.service.MetricsServiceImpl;
+import market.service.jdbc.AuditServiceJdbc;
+import market.service.jdbc.ProductServiceJdbc;
+import market.service.jdbc.UserServiceJdbc;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.sql.DataSource;
 import java.io.IOException;
-import java.util.*;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Properties;
+import java.util.Scanner;
 
 public class ConsoleApp {
+
     private final AuthController auth;
     private final ProductController products;
     private final AuditService audit;
@@ -23,20 +40,62 @@ public class ConsoleApp {
     private final Scanner in = new Scanner(System.in);
 
     public ConsoleApp() throws IOException {
+
+        // 1. Загружаем конфиг
+        Properties props = new Properties();
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream("application.properties")) {
+            if (in == null) {
+                throw new RuntimeException("application.properties not found in classpath");
+            }
+            props.load(in);
+        }
+
+        // 2. Метрики
         this.metrics = new MetricsServiceImpl();
-        this.audit = new AuditServiceImpl();
 
-        var productRepo = new InMemoryProductRepository();
-        var catalogService = new CatalogServiceImpl(productRepo, metrics);
+        // 3. DataSource
+        HikariConfig cfg = new HikariConfig();
+        cfg.setJdbcUrl(props.getProperty("db.url"));
+        cfg.setUsername(props.getProperty("db.username"));
+        cfg.setPassword(props.getProperty("db.password"));
+        cfg.setMaximumPoolSize(5);
 
-        var userRepo = new InMemoryUserRepository();
-        var authService = new AuthServiceImpl(userRepo);
+        DataSource ds = new HikariDataSource(cfg);
 
+        // 4. Liquibase
+        MigrationRunner.runMigrations(
+                props.getProperty("db.url"),
+                props.getProperty("db.username"),
+                props.getProperty("db.password"),
+                props.getProperty("liquibase.changelog"),
+                props.getProperty("db.schema"),
+                props.getProperty("db.liquibaseSchema")
+        );
+
+        System.out.println("Миграции БД применены успешно.\n");
+
+        // 5. Репозитории
+        var productRepo = new ProductRepositoryJdbc(ds);
+        var userRepo    = new UserRepositoryJdbc(ds);
+        var auditRepo   = new AuditRepositoryJdbc(ds);
+
+        // 6. Сервисы
+        int cacheSize = Integer.parseInt(props.getProperty("cache.size", "100"));
+        var productService = new ProductServiceJdbc(productRepo, metrics, cacheSize);
+        var authService    = new UserServiceJdbc(userRepo);
+        this.audit         = new AuditServiceJdbc(auditRepo);
+
+        // 7. Контроллеры
         this.auth = new ConsoleAuthController(authService);
-        this.products = new ConsoleProductController(catalogService);
+        this.products = new ConsoleProductController(productService);
     }
 
     public static void main(String[] args) throws IOException {
+        Logger.getLogger("liquibase").setLevel(Level.WARNING);
+        Logger.getLogger("liquibase.util").setLevel(Level.WARNING);
+        Logger.getLogger("liquibase.command").setLevel(Level.WARNING);
+        Logger.getLogger("liquibase.lockservice").setLevel(Level.WARNING);
+
         new ConsoleApp().run();
     }
 

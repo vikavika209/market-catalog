@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/01-create-schemas.yaml
+  - include:
+      file: db/changelog/02-create-sequences-and-tables.yaml
+  - include:
+      file: db/changelog/03-seed-data.yaml

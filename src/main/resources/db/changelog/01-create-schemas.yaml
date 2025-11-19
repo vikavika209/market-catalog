@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: 01-create-schemas
+      author: vika
+      changes:
+        - sql:
+            sql: |
+              CREATE SCHEMA IF NOT EXISTS meta;   -- служебная
+              CREATE SCHEMA IF NOT EXISTS market; -- сущности
+              REVOKE ALL ON SCHEMA public FROM PUBLIC;

@@ -1,0 +1,56 @@
+databaseChangeLog:
+  - changeSet:
+      id: 04-seed-users
+      author: vika
+      changes:
+        - insert:
+            schemaName: market
+            tableName: users
+            columns:
+              - column:
+                  name: username
+                  value: "admin"
+              - column:
+                  name: password
+                  value: "admin"
+              - column:
+                  name: role
+                  value: "ADMIN"
+
+        - insert:
+            schemaName: market
+            tableName: users
+            columns:
+              - column:
+                  name: username
+                  value: "user"
+              - column:
+                  name: password
+                  value: "user"
+              - column:
+                  name: role
+                  value: "USER"
+
+  - changeSet:
+      id: 05-seed-products
+      author: vika
+      changes:
+        - insert:
+            schemaName: market
+            tableName: products
+            columns:
+              - column:
+                  name: name
+                  value: "iPhone 15"
+              - column:
+                  name: brand
+                  value: "Apple"
+              - column:
+                  name: category
+                  value: "ELECTRONICS"
+              - column:
+                  name: price
+                  valueNumeric: 999.99
+              - column:
+                  name: active
+                  valueBoolean: true

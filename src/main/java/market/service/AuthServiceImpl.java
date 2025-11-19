@@ -10,6 +10,11 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Реализация сервиса аутентификации пользователей.
+ * Отвечает за вход, выход, регистрацию и получение текущего пользователя.
+ * Работает поверх {@link UserRepository}, который управляет хранением данных.
+ */
 public class AuthServiceImpl implements AuthService {
     private final UserRepository repo;
     private User current;

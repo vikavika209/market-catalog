@@ -9,6 +9,17 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Реализация {@link ProductController}, предназначенная для работы
+ * через консольный пользовательский интерфейс.
+ * <p>
+ * Данный контроллер является адаптером между UI-слоем (консоль)
+ * и бизнес-логикой, инкапсулированной в {@link CatalogService}.
+ * Он не содержит логики работы с товарами сам по себе — всё делегируется
+ * сервисному слою.
+ * <p>
+ * Позволяет легко заменить консоль на REST API, не переписывая бизнес-логику.
+ */
 public class ConsoleProductController implements ProductController {
     private final CatalogService catalog;
 
