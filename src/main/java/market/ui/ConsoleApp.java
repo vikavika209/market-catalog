@@ -2,6 +2,7 @@ package market.ui;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import market.config.AppConfig;
 import market.controller.api.AuthController;
 import market.controller.api.ProductController;
 import market.controller.api.impl.console.ConsoleAuthController;
@@ -12,24 +13,20 @@ import market.exception.AuthorizationException;
 import market.exception.EntityNotFoundException;
 import market.exception.PersistenceException;
 import market.exception.ValidationException;
+import market.repo.AuditRepository;
+import market.repo.ProductRepository;
+import market.repo.UserRepository;
 import market.repo.jdbc.AuditRepositoryJdbc;
 import market.repo.jdbc.ProductRepositoryJdbc;
 import market.repo.jdbc.UserRepositoryJdbc;
-import market.service.AuditService;
-import market.service.MetricsService;
-import market.service.MetricsServiceImpl;
-import market.service.jdbc.AuditServiceJdbc;
-import market.service.jdbc.ProductServiceJdbc;
-import market.service.jdbc.UserServiceJdbc;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import market.service.*;
 
 import javax.sql.DataSource;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
-import java.util.Properties;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ConsoleApp {
 
@@ -39,58 +36,41 @@ public class ConsoleApp {
     private final MetricsService metrics;
     private final Scanner in = new Scanner(System.in);
 
-    public ConsoleApp() throws IOException {
+    public ConsoleApp() {
+        final AppConfig cfg = new AppConfig();
+        final int size = cfg.getInt("cache.size", 64);
+        final String dbUrl = cfg.get("db.url");
+        final String dbUser = cfg.get("db.user");
+        final String dbPass = cfg.get("db.password");
 
-        // 1. Загружаем конфиг
-        Properties props = new Properties();
-        try (InputStream in = getClass().getClassLoader().getResourceAsStream("application.properties")) {
-            if (in == null) {
-                throw new RuntimeException("application.properties not found in classpath");
-            }
-            props.load(in);
-        }
+        // DataSource
+        HikariConfig hikari = new HikariConfig();
+        hikari.setJdbcUrl(dbUrl);
+        hikari.setUsername(dbUser);
+        hikari.setPassword(dbPass);
+        DataSource ds = new HikariDataSource(hikari);
 
-        // 2. Метрики
+        // Liquibase
+        MigrationRunner.runMigrations(ds, cfg.get("liquibase.changelog"), cfg.get("liquibase.defaultSchema"), cfg.get("liquibase.serviceSchema"));
+
+
+        // Repositories
+        ProductRepository productRepo = new ProductRepositoryJdbc(ds);
+        UserRepository userRepo = new UserRepositoryJdbc(ds);
+        AuditRepository auditRepo = new AuditRepositoryJdbc(ds);
+
+        // Services
         this.metrics = new MetricsServiceImpl();
+        CatalogService catalogService = new CatalogServiceImpl(productRepo, metrics, size);
+        AuthService authService = new AuthServiceImpl(userRepo);
+        this.audit = new AuditServiceImpl(auditRepo);
 
-        // 3. DataSource
-        HikariConfig cfg = new HikariConfig();
-        cfg.setJdbcUrl(props.getProperty("db.url"));
-        cfg.setUsername(props.getProperty("db.username"));
-        cfg.setPassword(props.getProperty("db.password"));
-        cfg.setMaximumPoolSize(5);
-
-        DataSource ds = new HikariDataSource(cfg);
-
-        // 4. Liquibase
-        MigrationRunner.runMigrations(
-                props.getProperty("db.url"),
-                props.getProperty("db.username"),
-                props.getProperty("db.password"),
-                props.getProperty("liquibase.changelog"),
-                props.getProperty("db.schema"),
-                props.getProperty("db.liquibaseSchema")
-        );
-
-        System.out.println("Миграции БД применены успешно.\n");
-
-        // 5. Репозитории
-        var productRepo = new ProductRepositoryJdbc(ds);
-        var userRepo    = new UserRepositoryJdbc(ds);
-        var auditRepo   = new AuditRepositoryJdbc(ds);
-
-        // 6. Сервисы
-        int cacheSize = Integer.parseInt(props.getProperty("cache.size", "100"));
-        var productService = new ProductServiceJdbc(productRepo, metrics, cacheSize);
-        var authService    = new UserServiceJdbc(userRepo);
-        this.audit         = new AuditServiceJdbc(auditRepo);
-
-        // 7. Контроллеры
+        // Controllers
         this.auth = new ConsoleAuthController(authService);
-        this.products = new ConsoleProductController(productService);
+        this.products = new ConsoleProductController(catalogService);
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Logger.getLogger("liquibase").setLevel(Level.WARNING);
         Logger.getLogger("liquibase.util").setLevel(Level.WARNING);
         Logger.getLogger("liquibase.command").setLevel(Level.WARNING);
@@ -99,6 +79,7 @@ public class ConsoleApp {
         new ConsoleApp().run();
     }
 
+    @SuppressWarnings("InfiniteLoopStatement")
     private void run() {
         println("Каталог товаров");
         while (true) {
@@ -131,23 +112,34 @@ public class ConsoleApp {
     }
 
     private void mainMenu() {
-        var user = this.auth.current().get();
-        println("--- МЕНЮ ---\n" +
-                "1) Список товаров (с пагинацией)\n" +
-                "2) Добавить товар (только админ)\n" +
-                "3) Изменить товар (только админ)\n" +
-                "4) Удалить товар (только админ)\n" +
-                "5) Поиск / фильтрация (с пагинацией)\n" +
-                "6) Метрики\n" +
-                "7) Выйти из аккаунта\n" +
-                "8) Сохранить данные\n");
+        var user = auth.current().orElseThrow(() -> new IllegalStateException("Пользователь должен быть авторизован"));
+        System.out.println("""
+                --- МЕНЮ ---
+                1) Список товаров (с пагинацией)
+                2) Добавить товар (только админ)
+                3) Изменить товар (только админ)
+                4) Удалить товар (только админ)
+                5) Поиск / фильтрация (с пагинацией)
+                6) Метрики
+                7) Выйти из аккаунта
+                8) Сохранить данные
+                """);
         int c = askInt("Выберите пункт: ");
         try {
             switch (c) {
                 case 1 -> listWithPagination();
-                case 2 -> { requireAdmin(user); create(); }
-                case 3 -> { requireAdmin(user); update(); }
-                case 4 -> { requireAdmin(user); delete(); }
+                case 2 -> {
+                    requireAdmin(user);
+                    create();
+                }
+                case 3 -> {
+                    requireAdmin(user);
+                    update();
+                }
+                case 4 -> {
+                    requireAdmin(user);
+                    delete();
+                }
                 case 5 -> searchWithPagination();
                 case 6 -> println(metrics.snapshot());
                 case 7 -> {
@@ -222,19 +214,9 @@ public class ConsoleApp {
         Double minP = min.isBlank() ? null : Double.parseDouble(min);
         Double maxP = max.isBlank() ? null : Double.parseDouble(max);
         Boolean act = onlyActive.isBlank() ? null : Boolean.parseBoolean(onlyActive);
-        var res = products.search(
-                q.isBlank() ? null : q,
-                brand.isBlank() ? null : brand,
-                category,
-                minP,
-                maxP,
-                act, 0,
-                Integer.MAX_VALUE
-        );
+        var res = products.search(q.isBlank() ? null : q, brand.isBlank() ? null : brand, category, minP, maxP, act, 0, Integer.MAX_VALUE);
         paginateAndShow(res);
-        audit.append(new AuditEvent(currentUser(), AuditAction.SEARCH,
-                "q=%s brand=%s cat=%s min=%s max=%s active=%s size=%d"
-                        .formatted(q, brand, category, minP, maxP, act, res.size())));
+        audit.append(new AuditEvent(currentUser(), AuditAction.SEARCH, "q=%s brand=%s cat=%s min=%s max=%s active=%s size=%d".formatted(q, brand, category, minP, maxP, act, res.size())));
     }
 
     private void paginateAndShow(List<Product> list) {
@@ -252,8 +234,7 @@ public class ConsoleApp {
             }
             println(("--- Страница %d ---").formatted(page + 1));
             slice.forEach(p -> println(p.toString()));
-            String nav = askDef("[N] — далее, [P] — назад, [Q] — выход", "N")
-                    .trim().toUpperCase();
+            String nav = askDef("[N] — далее, [P] — назад, [Q] — выход", "N").trim().toUpperCase();
             if (nav.equals("N")) page++;
             else if (nav.equals("P")) page = Math.max(0, page - 1);
             else break;
@@ -264,9 +245,7 @@ public class ConsoleApp {
         Product p = new Product();
         p.setName(ask("Название: "));
         p.setBrand(ask("Бренд: "));
-        p.setCategory(Category.valueOf(
-                ask("Категория (ELECTRONICS/FASHION/HOME/BEAUTY/FOOD/SPORTS/BOOKS/OTHER): ").toUpperCase()
-        ));
+        p.setCategory(Category.valueOf(ask("Категория (ELECTRONICS/FASHION/HOME/BEAUTY/FOOD/SPORTS/BOOKS/OTHER): ").toUpperCase()));
         p.setPrice(Double.parseDouble(ask("Цена: ")));
         p.setDescription(ask("Описание: "));
         p.setActive(true);
@@ -276,7 +255,7 @@ public class ConsoleApp {
     }
 
     private void update() {
-        long id = askLong("ID товара: ");
+        long id = askLong();
 
         var opt = products.get(id);
         if (opt.isEmpty()) {
@@ -306,7 +285,7 @@ public class ConsoleApp {
     }
 
     private void delete() {
-        long id = askLong("ID товара: ");
+        long id = askLong();
         boolean ok = products.delete(id);
         if (ok) {
             audit.append(new AuditEvent(currentUser(), AuditAction.DELETE, "id=" + id));
@@ -315,8 +294,7 @@ public class ConsoleApp {
     }
 
     private void requireAdmin(User u) {
-        if (u.getRole() != Role.ADMIN)
-            throw new AuthorizationException("Только для администратора");
+        if (u.getRole() != Role.ADMIN) throw new AuthorizationException("Только для администратора");
     }
 
     private String currentUser() {
@@ -342,17 +320,17 @@ public class ConsoleApp {
         while (true) {
             try {
                 return Integer.parseInt(ask(p));
-            } catch (NumberFormatException  e) {
+            } catch (NumberFormatException e) {
                 println("Введите число.");
             }
         }
     }
 
-    private long askLong(String p) {
+    private long askLong() {
         while (true) {
             try {
-                return Long.parseLong(ask(p));
-            } catch (NumberFormatException  e) {
+                return Long.parseLong(ask("ID товара: "));
+            } catch (NumberFormatException e) {
                 println("Введите число.");
             }
         }

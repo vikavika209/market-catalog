@@ -19,7 +19,7 @@ import java.util.Optional;
  * In-memory репозиторий для сущности {@link User}.
  * Данные хранятся в HashMap и исчезают после завершения программы.
  */
-public class InMemoryUserRepository implements UserRepository{
+public class InMemoryUserRepository implements UserRepository {
     private final Map<String, User> users = new HashMap<>();
     private final Path file = Paths.get("users.csv");
 
@@ -44,7 +44,7 @@ public class InMemoryUserRepository implements UserRepository{
         try (BufferedReader br = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
             String line;
             while ((line = br.readLine()) != null) {
-                line = line.replace("\uFEFF","").trim();
+                line = line.replace("\uFEFF", "").trim();
                 if (line.isBlank() || line.startsWith("#")) continue;
                 String[] p = line.split(",", -1);
                 if (p.length < 3) continue;
@@ -55,9 +55,7 @@ public class InMemoryUserRepository implements UserRepository{
 
     @Override
     public void persist() throws IOException {
-        try (BufferedWriter bw = Files.newBufferedWriter(
-                file, StandardCharsets.UTF_8,
-                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
+        try (BufferedWriter bw = Files.newBufferedWriter(file, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
             bw.write("#username,password,role\n");
             for (User u : users.values()) {
                 bw.write(String.join(",", u.getUsername(), u.getPassword(), u.getRole().name()));

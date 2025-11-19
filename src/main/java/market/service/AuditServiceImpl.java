@@ -1,29 +1,22 @@
 package market.service;
 
 import market.domain.AuditEvent;
-
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import market.repo.AuditRepository;
 
 /**
  * Реализация сервиса аудита, отвечающая за запись событий {@link AuditEvent}.
  * Используется для логирования действий пользователей (LOGIN, LOGOUT, CREATE, UPDATE, DELETE, SEARCH).
  */
-public class AuditServiceImpl implements  AuditService {
+public class AuditServiceImpl implements AuditService {
 
-    private final Path file = Paths.get("audit.log");
+    private final AuditRepository auditRepository;
+
+    public AuditServiceImpl(AuditRepository auditRepository) {
+        this.auditRepository = auditRepository;
+    }
 
     @Override
-    public void append(AuditEvent e){
-        try (BufferedWriter bw = Files.newBufferedWriter(file,
-                StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            bw.write(e.toString()); bw.newLine();
-        } catch (IOException ex) {
-            System.err.println("Audit write failed: " + ex.getMessage());
-        }
+    public void append(AuditEvent e) {
+        auditRepository.save(e);
     }
 }

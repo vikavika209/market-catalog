@@ -20,7 +20,7 @@ public interface AuthController {
      * @param username имя пользователя
      * @param password пароль
      * @return {@link Optional} с объектом {@link User}, если аутентификация прошла успешно;
-     *         {@link Optional#empty()} — если имя пользователя или пароль неверны
+     * {@link Optional#empty()} — если имя пользователя или пароль неверны
      */
     Optional<User> login(String username, String password);
 
@@ -39,16 +39,15 @@ public interface AuthController {
      * @param username имя нового пользователя
      * @param password пароль нового пользователя
      * @param role     роль (например, {@code USER} или {@code ADMIN})
-     * @return созданный пользователь
      * @throws IllegalArgumentException если пользователь с таким именем уже существует
      */
-    User register(String username, String password, Role role);
+    void register(String username, String password, Role role);
 
     /**
      * Возвращает текущего авторизованного пользователя, если он есть.
      *
      * @return {@link Optional} с объектом {@link User}, если пользователь вошёл в систему,
-     *         или {@link Optional#empty()} — если пользователь не авторизован
+     * или {@link Optional#empty()} — если пользователь не авторизован
      */
     Optional<User> current();
 

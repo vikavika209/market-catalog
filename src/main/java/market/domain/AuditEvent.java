@@ -1,4 +1,5 @@
 package market.domain;
+
 import java.time.LocalDateTime;
 
 public class AuditEvent {
@@ -40,14 +41,9 @@ public class AuditEvent {
         return id;
     }
 
-    public String getProductName() {
-        return productName;
-    }
-
     @Override
     public String toString() {
-        return "[%s] user=%s action=%s details=%s"
-                .formatted(timestamp, username, action, details);
+        return "[%s] user=%s action=%s details=%s".formatted(timestamp, username, action, details);
     }
 
     public void setUsername(String username) {

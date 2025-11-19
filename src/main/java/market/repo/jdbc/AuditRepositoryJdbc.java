@@ -27,17 +27,14 @@ public class AuditRepositoryJdbc implements AuditRepository {
     @Override
     public void save(AuditEvent event) {
         String sql = """
-            
-                INSERT INTO market.audit_log (username, action, details, ts)
-            VALUES (?, ?, ?, ?)
-            """;
+                
+                    INSERT INTO market.audit_log (username, action, details, ts)
+                VALUES (?, ?, ?, ?)
+                """;
 
-        LocalDateTime ts = event.getTimestamp() != null
-                ? event.getTimestamp()
-                : LocalDateTime.now();
+        LocalDateTime ts = event.getTimestamp() != null ? event.getTimestamp() : LocalDateTime.now();
 
-        try (Connection cn = ds.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection cn = ds.getConnection(); PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, event.getUsername());
             ps.setString(2, event.getAction().name());
@@ -61,17 +58,14 @@ public class AuditRepositoryJdbc implements AuditRepository {
 
     @Override
     public List<AuditEvent> findAll() {
-        String sql =
-                """
-            SELECT id, username, action, details, ts
-            FROM
-                market.audit_log
-                            ORDER BY ts DESC, id DESC
-            """;
+        String sql = """
+                SELECT id, username, action, details, ts
+                FROM
+                    market.audit_log
+                                ORDER BY ts DESC, id DESC
+                """;
 
-        try (Connection cn = ds.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection cn = ds.getConnection(); PreparedStatement ps = cn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             List<AuditEvent> result = new ArrayList<>();
             while (rs.next()) {
@@ -84,21 +78,18 @@ public class AuditRepositoryJdbc implements AuditRepository {
     }
 
     @Override
-    public List<AuditEvent> findByUsername(String
-                username) {
-        String sql =
-                """
-            SELECT id,
-                username, action,
-                details, ts
-            FROM
-                market.audit_log
-            WHERE username = ?
-            ORDER BY ts DESC, id DESC
-            """;
+    public List<AuditEvent> findByUsername(String username) {
+        String sql = """
+                SELECT id,
+                    username, action,
+                    details, ts
+                FROM
+                    market.audit_log
+                WHERE username = ?
+                ORDER BY ts DESC, id DESC
+                """;
 
-        try (Connection cn = ds.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+        try (Connection cn = ds.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
 
             ps.setString(1, username);
 
@@ -115,19 +106,17 @@ public class AuditRepositoryJdbc implements AuditRepository {
     }
 
     @Override
-    public List<AuditEvent>
-                findRecent(int limit) {
+    public List<AuditEvent> findRecent(int limit) {
         String sql = """
-            
-                SELECT id,
-                username, action, details, ts
-            FROM market.audit_log
-            ORDER BY ts DESC, id DESC
-            LIMIT ?
-            """;
+                
+                    SELECT id,
+                    username, action, details, ts
+                FROM market.audit_log
+                ORDER BY ts DESC, id DESC
+                LIMIT ?
+                """;
 
-        try (Connection cn = ds.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+        try (Connection cn = ds.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
 
             ps.setInt(1, limit);
 

@@ -20,7 +20,7 @@ public interface AuthService {
      * @param username имя пользователя
      * @param password пароль пользователя
      * @return {@link Optional} с объектом {@link User}, если вход выполнен успешно;
-     *         {@link Optional#empty()} — если имя пользователя или пароль неверны
+     * {@link Optional#empty()} — если имя пользователя или пароль неверны
      */
     Optional<User> login(String username, String password);
 
@@ -34,7 +34,7 @@ public interface AuthService {
      * Возвращает текущего авторизованного пользователя, если он есть.
      *
      * @return {@link Optional} с объектом {@link User}, если пользователь авторизован;
-     *         {@link Optional#empty()}, если в системе никто не вошёл
+     * {@link Optional#empty()}, если в системе никто не вошёл
      */
     Optional<User> current();
 

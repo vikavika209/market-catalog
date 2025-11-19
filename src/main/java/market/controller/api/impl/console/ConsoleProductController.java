@@ -28,26 +28,27 @@ public class ConsoleProductController implements ProductController {
     }
 
     @Override
-    public Product create(Product p){
+    public Product create(Product p) {
         return catalog.create(p);
     }
 
     @Override
-    public Product update(Product p){
+    public Product update(Product p) {
         return catalog.update(p);
     }
 
     @Override
-    public boolean delete(long id){
+    public boolean delete(long id) {
         return catalog.delete(id);
     }
+
     @Override
-    public Optional<Product> get(long id){
+    public Optional<Product> get(long id) {
         return catalog.get(id);
     }
 
     @Override
-    public List<Product> list(int page, int size){
+    public List<Product> list(int page, int size) {
         return catalog.paginate(catalog.listAll(), page, size);
     }
 
@@ -60,7 +61,7 @@ public class ConsoleProductController implements ProductController {
                                 Boolean onlyActive,
                                 int page,
                                 int size
-    ){
+    ) {
         var res = catalog.search(q, brand, category, min, max, onlyActive);
         return catalog.paginate(res, page, size);
     }

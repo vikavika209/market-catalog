@@ -69,11 +69,7 @@ public interface ProductController {
      * @param size       количество элементов на странице
      * @return список найденных товаров
      */
-    List<Product> search(String q, String brand,
-                         Category category,
-                         Double min, Double max,
-                         Boolean onlyActive,
-                         int page, int size);
+    List<Product> search(String q, String brand, Category category, Double min, Double max, Boolean onlyActive, int page, int size);
 
     /**
      * Сохраняет текущее состояние данных (например, в CSV).
@@ -90,7 +86,7 @@ public interface ProductController {
      * @param page номер страницы (начиная с 0)
      * @param size количество элементов на странице
      * @return подсписок товаров, соответствующий указанной странице;
-     *         пустой список, если страница выходит за пределы общего списка
+     * пустой список, если страница выходит за пределы общего списка
      */
     List<Product> paginate(List<Product> list, int page, int size);
 }
