@@ -1,6 +1,9 @@
 package market.service;
 
+import market.aop.Audited;
+import market.aop.Logged;
 import market.cache.LRUCache;
+import market.domain.AuditAction;
 import market.domain.Category;
 import market.domain.Product;
 import market.repo.ProductRepository;
@@ -28,6 +31,8 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
+    @Logged
+    @Audited(AuditAction.CREATE)
     public Product create(Product p) {
         Product saved = repo.save(p);
         invalidateCache();
@@ -36,11 +41,14 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
+    @Logged
     public Optional<Product> get(long id) {
         return repo.findById(id);
     }
 
     @Override
+    @Logged
+    @Audited(AuditAction.DELETE)
     public boolean delete(long id) {
         boolean ok = repo.deleteById(id);
         if (ok) {
@@ -51,6 +59,8 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
+    @Logged
+    @Audited(AuditAction.UPDATE)
     public Product update(Product p) {
         if (p.getId() == 0 || repo.findById(p.getId()).isEmpty())
             throw new IllegalArgumentException("Product not found");
@@ -60,11 +70,13 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
+    @Logged
     public List<Product> listAll() {
         return repo.findAll();
     }
 
     @Override
+    @Logged
     public List<Product> search(String namePart, String brand, Category category, Double min, Double max, Boolean onlyActive) {
         String key = cacheKey(namePart, brand, category, min, max, onlyActive);
         long t0 = System.currentTimeMillis();
@@ -98,6 +110,7 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
+    @Logged
     public List<Product> paginate(List<Product> list, int page, int size) {
         if (size <= 0) throw new IllegalArgumentException("size must be > 0");
         if (page < 0) throw new IllegalArgumentException("page must be >= 0");
@@ -108,6 +121,7 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
+    @Logged
     public void persist() throws IOException {
         repo.flush();
     }

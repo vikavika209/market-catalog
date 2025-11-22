@@ -1,5 +1,8 @@
 package market.service;
 
+import market.aop.Audited;
+import market.aop.Logged;
+import market.domain.AuditAction;
 import market.domain.Role;
 import market.domain.User;
 import market.exception.PersistenceException;
@@ -24,6 +27,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Logged
+    @Audited(AuditAction.LOGIN)
     public Optional<User> login(String username, String password) {
         return repo.findByUsername(username).filter(u -> Objects.equals(password, u.getPassword())).map(u -> {
             current = u;
@@ -32,16 +37,21 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Logged
+    @Audited(AuditAction.LOGOUT)
     public void logout() {
         current = null;
     }
 
     @Override
+    @Logged
     public Optional<User> current() {
         return Optional.ofNullable(current);
     }
 
     @Override
+    @Logged
+    @Audited(AuditAction.CREATE)
     public void register(String username, String password, Role role) {
         if (username == null || username.isBlank()) throw new ValidationException("Имя не может быть пустым");
         if (password == null || password.isBlank()) throw new ValidationException("Пароль не может быть пустым");
@@ -51,11 +61,13 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Logged
     public boolean exists(String username) {
         return repo.exists(username);
     }
 
     @Override
+    @Logged
     public void persist() {
         try {
             repo.persist();
