@@ -8,6 +8,7 @@ import market.domain.User;
 import market.exception.PersistenceException;
 import market.exception.ValidationException;
 import market.repo.UserRepository;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -18,6 +19,7 @@ import java.util.Optional;
  * Отвечает за вход, выход, регистрацию и получение текущего пользователя.
  * Работает поверх {@link UserRepository}, который управляет хранением данных.
  */
+@Service
 public class AuthServiceImpl implements AuthService {
     private final UserRepository repo;
     private User current;

@@ -4,6 +4,7 @@ import market.controller.api.AuthController;
 import market.domain.Role;
 import market.domain.User;
 import market.service.AuthService;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
@@ -17,6 +18,7 @@ import java.util.Optional;
  * <p>
  * Позволяет легко заменить консольный UI на REST API без изменения бизнес-логики.
  */
+@Component
 public class ConsoleAuthController implements AuthController {
     private final AuthService auth;
 

@@ -7,15 +7,12 @@ import market.dto.product.ProductResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Маппер между сущностью Product и DTO.
  */
-@Mapper(imports = Category.class)
+@Mapper(componentModel = "spring", imports = Category.class)
 public interface ProductMapper {
-
-    ProductMapper INSTANCE = Mappers.getMapper(ProductMapper.class);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(

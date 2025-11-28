@@ -1,5 +1,8 @@
 package market.service;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
 /**
  * Реализация сервиса метрик каталога.
  * Хранит статистику по работе приложения:
@@ -10,6 +13,8 @@ package market.service;
  * Предоставляет снимок метрик в текстовом виде
  * для отображения в консольном интерфейсе.
  */
+@Service
+@RequiredArgsConstructor
 public class MetricsServiceImpl implements MetricsService {
     private volatile long lastQueryMillis;
     private volatile int productCount;

@@ -13,6 +13,16 @@ public class ProductResponseDto {
     public ProductResponseDto() {
     }
 
+    public ProductResponseDto(Long id, String name, String brand, String category, double price, String description, boolean active) {
+        this.id = id;
+        this.name = name;
+        this.brand = brand;
+        this.category = category;
+        this.price = price;
+        this.description = description;
+        this.active = active;
+    }
+
     public Long getId() {
         return id;
     }

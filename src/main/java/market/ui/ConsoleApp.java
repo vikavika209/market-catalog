@@ -1,33 +1,25 @@
 package market.ui;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-import market.config.AppConfig;
+import market.config.RootConfig;
 import market.controller.api.AuthController;
 import market.controller.api.ProductController;
-import market.controller.api.impl.console.ConsoleAuthController;
-import market.controller.api.impl.console.ConsoleProductController;
-import market.db.MigrationRunner;
 import market.domain.*;
 import market.exception.AuthorizationException;
 import market.exception.EntityNotFoundException;
 import market.exception.PersistenceException;
 import market.exception.ValidationException;
-import market.repo.AuditRepository;
-import market.repo.ProductRepository;
-import market.repo.UserRepository;
-import market.repo.jdbc.AuditRepositoryJdbc;
-import market.repo.jdbc.ProductRepositoryJdbc;
-import market.repo.jdbc.UserRepositoryJdbc;
-import market.service.*;
+import market.service.AuditService;
+import market.service.MetricsService;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.stereotype.Component;
 
-import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@Component
 public class ConsoleApp {
 
     private final AuthController auth;
@@ -36,38 +28,11 @@ public class ConsoleApp {
     private final MetricsService metrics;
     private final Scanner in = new Scanner(System.in);
 
-    public ConsoleApp() {
-        final AppConfig cfg = new AppConfig();
-        final int size = cfg.getInt("cache.size", 64);
-        final String dbUrl = cfg.get("db.url");
-        final String dbUser = cfg.get("db.user");
-        final String dbPass = cfg.get("db.password");
-
-        // DataSource
-        HikariConfig hikari = new HikariConfig();
-        hikari.setJdbcUrl(dbUrl);
-        hikari.setUsername(dbUser);
-        hikari.setPassword(dbPass);
-        DataSource ds = new HikariDataSource(hikari);
-
-        // Liquibase
-        MigrationRunner.runMigrations(ds, cfg.get("liquibase.changelog"), cfg.get("liquibase.defaultSchema"), cfg.get("liquibase.serviceSchema"));
-
-
-        // Repositories
-        ProductRepository productRepo = new ProductRepositoryJdbc(ds);
-        UserRepository userRepo = new UserRepositoryJdbc(ds);
-        AuditRepository auditRepo = new AuditRepositoryJdbc(ds);
-
-        // Services
-        this.metrics = new MetricsServiceImpl();
-        CatalogService catalogService = new CatalogServiceImpl(productRepo, metrics, size);
-        AuthService authService = new AuthServiceImpl(userRepo);
-        this.audit = new AuditServiceImpl(auditRepo);
-
-        // Controllers
-        this.auth = new ConsoleAuthController(authService);
-        this.products = new ConsoleProductController(catalogService);
+    public ConsoleApp(AuthController auth, ProductController products, AuditService audit, MetricsService metrics) {
+        this.auth = auth;
+        this.products = products;
+        this.audit = audit;
+        this.metrics = metrics;
     }
 
     public static void main(String[] args) {
@@ -76,7 +41,10 @@ public class ConsoleApp {
         Logger.getLogger("liquibase.command").setLevel(Level.WARNING);
         Logger.getLogger("liquibase.lockservice").setLevel(Level.WARNING);
 
-        new ConsoleApp().run();
+        try (var ctx = new AnnotationConfigApplicationContext(RootConfig.class)) {
+            ConsoleApp app = ctx.getBean(ConsoleApp.class);
+            app.run();
+        }
     }
 
     @SuppressWarnings("InfiniteLoopStatement")

@@ -4,6 +4,7 @@ import market.controller.api.ProductController;
 import market.domain.Category;
 import market.domain.Product;
 import market.service.CatalogService;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.Optional;
  * <p>
  * Позволяет легко заменить консоль на REST API, не переписывая бизнес-логику.
  */
+@Component
 public class ConsoleProductController implements ProductController {
     private final CatalogService catalog;
 

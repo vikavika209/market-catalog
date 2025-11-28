@@ -1,6 +1,7 @@
 package market;
 
 
+import market.cache.LRUCache;
 import market.domain.Category;
 import market.domain.Product;
 import market.repo.InMemoryProductRepository;
@@ -22,7 +23,8 @@ public class CatalogServiceImplTest {
     void setup() throws IOException {
         InMemoryProductRepository repo = new InMemoryProductRepository();
         MetricsServiceImpl metrics = new MetricsServiceImpl();
-        service = new CatalogServiceImpl(repo, metrics, 100);
+        LRUCache<String, List<Long>> cache = new LRUCache<>(100);
+        service = new CatalogServiceImpl(repo, metrics, cache);
         service.create(new Product(0L, "iPhone 14", "Apple", Category.ELECTRONICS, 999.0, "Smartphone"));
         service.create(new Product(0L, "MacBook Air", "Apple", Category.ELECTRONICS, 1299.0, "Laptop"));
         service.create(new Product(0L, "Running Shoes", "Nike", Category.SPORTS, 120.0, "Shoes"));

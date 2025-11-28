@@ -4,6 +4,7 @@ import market.domain.AuditAction;
 import market.domain.AuditEvent;
 import market.exception.PersistenceException;
 import market.repo.AuditRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -16,6 +17,7 @@ import java.util.List;
  * <p>
  * Хранит данные в PostgreSQL в таблице {@code market.audit_log}.
  */
+@Repository
 public class AuditRepositoryJdbc implements AuditRepository {
 
     private final DataSource ds;

@@ -3,6 +3,7 @@ package market.repo.jdbc;
 import market.domain.Product;
 import market.exception.PersistenceException;
 import market.repo.ProductRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -18,6 +19,7 @@ import java.util.Optional;
  * <p>
  * Хранит и извлекает сущности {@link Product} из PostgreSQL,
  */
+@Repository
 public class ProductRepositoryJdbc implements ProductRepository {
     private final DataSource ds;
 

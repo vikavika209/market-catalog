@@ -4,6 +4,7 @@ import market.domain.Role;
 import market.domain.User;
 import market.exception.PersistenceException;
 import market.repo.UserRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -18,6 +19,7 @@ import java.util.Optional;
  * Реализует интерфейс {@link UserRepository} и обеспечивает полный CRUD-набор операций,
  * необходимых для аутентификации и управления данными пользователя.
  */
+@Repository
 public class UserRepositoryJdbc implements UserRepository {
 
     private final DataSource ds;

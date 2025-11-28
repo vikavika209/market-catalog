@@ -1,0 +1,12 @@
+db:
+  url: jdbc:postgresql://localhost:5433/marketdb
+  user: app_user
+  password: app_password
+
+liquibase:
+  changelog: db/changelog/db.changelog-master.yaml
+  defaultSchema: market
+  serviceSchema: meta
+
+cache:
+  size: 100

@@ -7,6 +7,7 @@ import market.domain.AuditAction;
 import market.domain.Category;
 import market.domain.Product;
 import market.repo.ProductRepository;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
@@ -19,15 +20,16 @@ import java.util.stream.Collectors;
  * Работает поверх {@link ProductRepository} и использует {@link MetricsService}
  * для сбора метрик (время выполнения запросов, статистика кеша).
  */
+@Service
 public class CatalogServiceImpl implements CatalogService {
     private final ProductRepository repo;
     private final MetricsService metrics;
     private final LRUCache<String, List<Long>> cache;
 
-    public CatalogServiceImpl(ProductRepository repo, MetricsService metrics, int cacheSize) {
+    public CatalogServiceImpl(ProductRepository repo, MetricsService metrics, LRUCache<String, List<Long>> cache) {
         this.repo = repo;
         this.metrics = metrics;
-        this.cache = new LRUCache<>(cacheSize);
+        this.cache = cache;
     }
 
     @Override
