@@ -10,7 +10,6 @@ import market.service.MetricsServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -52,6 +51,6 @@ public class CatalogServiceImplTest {
         assertEquals(2, page0.size());
         assertEquals(2, page1.size());
         assertEquals(0, page2.size());
-        assertNotEquals(page0.get(0).getId(), page1.get(0).getId());
+        assertNotEquals(page0.getFirst().getId(), page1.getFirst().getId());
     }
 }
