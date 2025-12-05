@@ -1,8 +1,7 @@
 package market.service;
 
-import market.aop.Audited;
-import market.aop.Logged;
-import market.domain.AuditAction;
+import com.pet.auditspringbootstarter.audit.Audited;
+import com.pet.loggingspringbootstarter.logging.Logged;
 import market.domain.Role;
 import market.domain.User;
 import market.exception.PersistenceException;
@@ -30,7 +29,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Logged
-    @Audited(AuditAction.LOGIN)
+    @Audited("LOGIN")
     public Optional<User> login(String username, String password) {
         return repo.findByUsername(username).filter(u -> Objects.equals(password, u.getPassword())).map(u -> {
             current = u;
@@ -40,7 +39,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Logged
-    @Audited(AuditAction.LOGOUT)
+    @Audited("LOGOUT")
     public void logout() {
         current = null;
     }
@@ -53,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Logged
-    @Audited(AuditAction.CREATE)
+    @Audited("CREATE")
     public void register(String username, String password, Role role) {
         if (username == null || username.isBlank()) throw new ValidationException("Имя не может быть пустым");
         if (password == null || password.isBlank()) throw new ValidationException("Пароль не может быть пустым");

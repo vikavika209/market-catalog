@@ -1,9 +1,8 @@
 package market.service;
 
-import market.aop.Audited;
-import market.aop.Logged;
+import com.pet.auditspringbootstarter.audit.Audited;
+import com.pet.loggingspringbootstarter.logging.Logged;
 import market.cache.LRUCache;
-import market.domain.AuditAction;
 import market.domain.Category;
 import market.domain.Product;
 import market.repo.ProductRepository;
@@ -34,7 +33,7 @@ public class CatalogServiceImpl implements CatalogService {
 
     @Override
     @Logged
-    @Audited(AuditAction.CREATE)
+    @Audited("CREATE")
     public Product create(Product p) {
         Product saved = repo.save(p);
         invalidateCache();
@@ -50,7 +49,7 @@ public class CatalogServiceImpl implements CatalogService {
 
     @Override
     @Logged
-    @Audited(AuditAction.DELETE)
+    @Audited("DELETE")
     public boolean delete(long id) {
         boolean ok = repo.deleteById(id);
         if (ok) {
@@ -62,7 +61,7 @@ public class CatalogServiceImpl implements CatalogService {
 
     @Override
     @Logged
-    @Audited(AuditAction.UPDATE)
+    @Audited("UPDATE")
     public Product update(Product p) {
         if (p.getId() == 0 || repo.findById(p.getId()).isEmpty())
             throw new IllegalArgumentException("Product not found");

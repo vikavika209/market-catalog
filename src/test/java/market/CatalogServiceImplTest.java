@@ -20,7 +20,7 @@ public class CatalogServiceImplTest {
     private CatalogServiceImpl service;
 
     @BeforeEach
-    void setup() throws IOException {
+    void setup() {
         InMemoryProductRepository repo = new InMemoryProductRepository();
         MetricsServiceImpl metrics = new MetricsServiceImpl();
         LRUCache<String, List<Long>> cache = new LRUCache<>(100);

@@ -1,4 +1,4 @@
-package market.aop;
+package com.pet.loggingspringbootstarter.logging;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -6,7 +6,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 /**
  * Аспект логирования.
@@ -15,9 +14,8 @@ import org.springframework.stereotype.Component;
  * измеряет время выполнения и пишет информацию в лог.
  */
 @Aspect
-@Component
 public class LoggingAspect {
-    @Around("@annotation(market.aop.Logged)")
+    @Around("@annotation(com.pet.loggingspringbootstarter.logging.Logged)")
     public Object logExecution(ProceedingJoinPoint pjp) throws Throwable {
         long start = System.nanoTime();
         boolean success = false;

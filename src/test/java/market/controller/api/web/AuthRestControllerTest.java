@@ -105,7 +105,7 @@ class AuthRestControllerTest {
     void register_success_withoutCurrentUser() throws Exception {
         AuthRegisterRequestDto dto = new AuthRegisterRequestDto();
         dto.setUsername("ghost");
-        dto.setPassword("pwd");
+        dto.setPassword("pwd2");
 
         when(authService.current()).thenReturn(Optional.empty());
 
@@ -121,11 +121,11 @@ class AuthRestControllerTest {
     void register_conflict_usernameAlreadyExists() throws Exception {
         AuthRegisterRequestDto dto = new AuthRegisterRequestDto();
         dto.setUsername("existing");
-        dto.setPassword("pwd");
+        dto.setPassword("pwd1");
 
         doThrow(new IllegalArgumentException("User already exists"))
                 .when(authService)
-                .register("existing", "pwd", Role.USER);
+                .register("existing", "pwd1", Role.USER);
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
